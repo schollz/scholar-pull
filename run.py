@@ -27,7 +27,7 @@ def getURL(url):
 	scholar = []
 	for elt in tree.xpath("//div[@class='gs_ri']"):
 		try:
-			title = elt.xpath(".//h3[@class='gs_rt']")[0].text_content().replace('[HTML]','').strip()
+			title = elt.xpath(".//h3[@class='gs_rt']")[0].text_content().replace('[HTML]','').replace('[CITATION]','').replace('[PDF]','').strip()
 			title = unicode(title.encode('utf-8'), 'ascii', 'ignore')
 			abstract = elt.xpath(".//div[@class='gs_rs']")[0].text_content().replace('[HTML]','').strip()
 			abstract = unicode(abstract.encode('utf-8'), 'ascii', 'ignore').replace('Abstract ','')
@@ -35,9 +35,12 @@ def getURL(url):
 			authors = author_list.split('-')[0].strip()
 			year = [int(s) for s in author_list.split() if s.isdigit()][0]
 			authors = unicode(authors.encode('utf-8'), 'ascii', 'ignore')
-			citations = int(elt.xpath(".//div[@class='gs_fl']/a")[0].text_content().split('by')[1])
-			data = {'title': title, 'authors': authors, 'citations': citations, 'year':year, 'abstract': abstract}
-			scholar.append(data)
+                        try:
+                            citations = int(elt.xpath(".//div[@class='gs_fl']/a")[0].text_content().split('Cited by')[1])
+                        except:
+                            citations = 0
+                        data = {'title': title, 'authors': authors, 'citations': citations, 'year':year, 'abstract': abstract, 'url':url}
+                        scholar.append(data)
 		except:
 			print('EXCEPTION')
 			print(elt.text_content())
@@ -54,7 +57,7 @@ def getURL(url):
 
 
 urls = []
-journals = ['science','nature']
+journals = ['science','nature','plos%20one']
 for year in range(2000,2016):
 	for start in range(0,1000,10):
 		for journal in journals:
@@ -73,11 +76,11 @@ urls = list(set(urls) - set(doneUrls))
 print(len(urls))
 
 #print(getURL('http://scholar.google.com/scholar?start=40&lr=lang_en&hl=en&as_publication=nature&as_ylo=2000&as_yhi=2000'))
-for i in range(0,len(urls)-11,10):
-	p = Pool(5)
-	tryUrls = urls[i:i+10]
+for i in range(0,len(urls)-51,50):
+	p = Pool(8)
+	tryUrls = urls[i:i+50]
 	results = p.map(getURL,tryUrls)
-	if (sum(results)<len(results)):
+	if (sum(results)==0):
 		print('restarting tor')
 		os.system('/etc/init.d/tor restart')
 		j = opener.open('http://icanhazip.com')
