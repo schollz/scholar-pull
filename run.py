@@ -76,10 +76,11 @@ urls = list(set(urls) - set(doneUrls))
 print(len(urls))
 
 #print(getURL('http://scholar.google.com/scholar?start=40&lr=lang_en&hl=en&as_publication=nature&as_ylo=2000&as_yhi=2000'))
-for i in range(0,len(urls)-51,50):
-	p = Pool(8)
-	tryUrls = urls[i:i+50]
-	results = p.map(getURL,tryUrls)
+for i in range(0,len(urls),1):
+	#p = Pool(2)
+	#tryUrls = urls[i:i+4]
+	#results = p.map(getURL,tryUrls)
+	results = [getURL(urls[i])]
 	if (sum(results)==0):
 		print('restarting tor')
 		os.system('/etc/init.d/tor restart')
